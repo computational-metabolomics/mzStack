@@ -1,0 +1,87 @@
+[project]
+name = "mzstack"
+version = "0.1.0"
+description = "Storage, querying and spectral matching for mass spectrometry data on the mzStack format"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Ossama Edbali", email = "o.edbali@bham.ac.uk" },
+]
+keywords = ["mass-spectrometry", "metabolomics", "parquet", "mzpeak", "massql"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+dependencies = [
+    "pyarrow>=14.0",
+    "duckdb>=1.2",
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "lxml>=4.9",
+]
+
+[project.optional-dependencies]
+# The MassQL query layer. `mzstack.query` requires it.
+massql = ["massql>=2026.3.14"]
+# The HUPO-PSI reference reader. Unreleased on PyPI and marked work in
+# progress upstream.
+mzpeak = ["mzpeak @ git+https://github.com/HUPO-PSI/mzPeak#subdirectory=python"]
+# Upstream BLINK. Not on PyPI; pulls torch/rdkit/jupyter of its own.
+blink = ["blink @ git+https://github.com/biorack/blink"]
+# Sample-metadata ingest from spreadsheets.
+excel = ["openpyxl>=3.0"]
+# EBI's ISA-Tab reader and FTP client, for `mzstack metabolights`. Pulls in
+# pydantic, httpx, click and beautifulsoup4.
+metabolights = ["metabolights-utils>=1.4.35"]
+dev = ["pytest>=7.0", "pytest-cov", "ruff>=0.4"]
+all = ["mzstack[massql,mzpeak,blink,excel,metabolights]"]
+
+[project.scripts]
+mzstack = "mzstack.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/ossedb/mzstack"
+Issues = "https://github.com/ossedb/mzstack/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# The `mzpeak` and `blink` extras point at git; neither is published on PyPI.
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mzstack"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "requires_massql: needs the massql package installed",
+    "requires_mzpeak: needs the mzpeak package installed",
+    "requires_blink: needs the blink package installed",
+    "requires_metabolights: needs the metabolights-utils package installed",
+    "network: reaches the MetaboLights repository over the network",
+    "requires_r: needs Rscript with MsBackendParquet installed",
+]
+
+[tool.ruff.lint.isort]
+# `mzml_builder` and `isatab_builder` are test helper modules, imported like
+# local packages.
+known-first-party = ["mzstack", "mzml_builder", "isatab_builder"]
+
+[tool.ruff.lint.per-file-ignores]
+# Literal mzML XML: the lines are as long as the elements they emit.
+"tests/mzml_builder.py" = ["E501"]

@@ -1,0 +1,542 @@
+/*
+ * Visual Framework 2.0, then the little that vf has no vocabulary for.
+ *
+ * Each vf package ships a precompiled, self-contained stylesheet that inlines
+ * the design tokens as `:root` custom properties; `vf-core` is the authoring
+ * pipeline, not a stylesheet, so no Sass toolchain is involved. Import order
+ * is cascade order: base, then utilities, then layout, then components.
+ */
+
+/* Base */
+@import '@visual-framework/vf-body/vf-body.css';
+@import '@visual-framework/vf-content/vf-content.css';
+@import '@visual-framework/vf-text/vf-text.css';
+
+/* Layout primitives */
+@import '@visual-framework/vf-stack/vf-stack.css';
+@import '@visual-framework/vf-grid/vf-grid.css';
+@import '@visual-framework/vf-box/vf-box.css';
+
+/* Components */
+@import '@visual-framework/vf-navigation/vf-navigation.css';
+@import '@visual-framework/vf-breadcrumbs/vf-breadcrumbs.css';
+@import '@visual-framework/vf-hero/vf-hero.css';
+@import '@visual-framework/vf-card/vf-card.css';
+@import '@visual-framework/vf-button/vf-button.css';
+@import '@visual-framework/vf-form/vf-form.css';
+@import '@visual-framework/vf-table/vf-table.css';
+@import '@visual-framework/vf-tabs/vf-tabs.css';
+@import '@visual-framework/vf-badge/vf-badge.css';
+@import '@visual-framework/vf-banner/vf-banner.css';
+@import '@visual-framework/vf-footer/vf-footer.css';
+
+/* Utilities last, so they win. */
+@import '@visual-framework/vf-utility-classes/vf-utility-classes.css';
+
+/* ------------------------------------------------------------------------
+ * App layer.
+ *
+ * Only what vf has no class for: plot containers, table overflow, and the
+ * file tree. Every value here reads a vf token rather than restating a colour
+ * or a step.
+ * --------------------------------------------------------------------- */
+
+:root {
+  --mz-border: var(--vf-ui-color--grey, #d8d8d8);
+  --mz-muted: var(--vf-color--grey--dark, #54585a);
+  --mz-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --mz-sans: 'IBM Plex Sans', Helvetica, Arial, sans-serif;
+  /* The break between two major sections of a page. */
+  --mz-section-gap: 3rem;
+}
+
+html {
+  color-scheme: light;
+}
+
+/*
+ * vf sets `box-sizing: border-box` on each of its own components but never
+ * globally. Without this, anything else -- `.mz-container`'s side padding, a
+ * panel's border -- is added outside the declared width and pushes the layout
+ * wider than its container.
+ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/*
+ * Fills two gaps in the imported vf packages.
+ *
+ * 1. `vf-body`'s page-margin reset is written
+ *    `html:not(.vf-disable-deprecated) html { margin: 0 }` -- an `html` inside
+ *    an `html` -- which matches nothing, leaving the UA's 8px body margin and
+ *    a white gutter around the header and hero. `margin: 0` removes it.
+ *
+ * 2. No imported vf package sets a document font. Each vf *component* class
+ *    sets its own; bare elements -- a panel header's `<strong>`, a `<dd>` --
+ *    take the UA default. `font-family` sets one for the document.
+ */
+body {
+  margin: 0;
+  background-color: var(--vf-ui-color--off-white, #fafafa);
+  color: var(--vf-color__text--primary, #1a1c1a);
+  font-family: var(--mz-sans);
+}
+
+/*
+ * `.vf-tabs__link` resets only `border-bottom-*`, which is all the `<a>` it was
+ * written for needs. A `<button>` with the same class keeps its UA background
+ * and outset border on the other three sides; these rules remove them.
+ */
+button.vf-tabs__link {
+  background: none;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  cursor: pointer;
+}
+
+/*
+ * vf styles no disabled state on any button. A solid one still reads as dead
+ * from the UA's greyed label; `--link` has no border and no ground to dim, so
+ * this dims its text.
+ */
+.vf-button--link[disabled] {
+  --vf-button-text-color: var(--mz-muted);
+  color: var(--mz-muted);
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* A pager sits in a line of text, so its links take that line's size. */
+.mz-pager .vf-button--link {
+  font-size: inherit;
+  padding: 0 0.25rem;
+}
+
+/* Successive sections of a page, spaced as a break. */
+.mz-section + .mz-section {
+  margin-top: var(--mz-section-gap);
+}
+
+/* The footer sits on every page. This holds it at the bottom of the viewport
+   on a short page (Create, Jobs). */
+.mz-app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/*
+ * Width is the cross axis of a column flex container, and at `stretch` a wide
+ * child (a spectra table) sizes these rows past the viewport. `width: 100%`
+ * makes the cross size definite and `min-width: 0` drops the automatic
+ * minimum, so wide content scrolls inside `.mz-table-scroll` and the page
+ * does not scroll sideways.
+ */
+.mz-app > * {
+  min-width: 0;
+  width: 100%;
+}
+
+.mz-app > main {
+  flex: 1 1 auto;
+}
+
+/* vf's hero text carries no top margin, so it butts against the heading. */
+.mz-hero__bg .vf-hero__heading {
+  margin-bottom: 1rem;
+}
+
+/*
+ * `vf-footer` paints a dark ground but only colours the text of its own named
+ * children (`__link`, `__legal`, …). Anything else comes out dark on dark,
+ * and inheriting from the footer does not reach it: every vf typography class
+ * hard-sets `color: #1a1c1a` on the element it is applied to, so a
+ * `vf-text-body--*` wrapper reintroduces the dark colour. Hence the second
+ * selector.
+ *
+ * vf's own stylesheet names `.vf-u-text-color--white` here, which
+ * `vf-utility-classes` does not ship; the class it does ship is
+ * `--ui--white`.
+ */
+.vf-footer,
+.vf-footer [class*='vf-text-body'] {
+  color: var(--vf-ui-color--white, #fff);
+}
+
+.vf-footer .mz-mono,
+.vf-footer .mz-tabular {
+  color: var(--vf-color--grey--lightest, #d0d0ce);
+}
+
+/* Numeric columns only read as columns when the digits are the same width. */
+.mz-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.mz-mono {
+  font-family: var(--mz-mono);
+}
+
+/* The page frame. vf has no container class; every view sits in this one. */
+.mz-container {
+  margin: 0 auto;
+  max-width: 80rem;
+  padding: 2rem 1.5rem;
+}
+
+/* A bordered surface. `vf-box` gives padding and a white ground but no rule;
+   the border is what separates a panel from the off-white page. */
+.mz-panel {
+  background-color: var(--vf-ui-color--white, #fff);
+  border: 1px solid var(--mz-border);
+  border-radius: 4px;
+}
+
+.mz-panel__header {
+  align-items: baseline;
+  border-bottom: 1px solid var(--mz-border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.mz-panel__header > * {
+  margin-bottom: 0;
+}
+
+/* The same row, dividing a panel rather than heading it: the rule goes above,
+   separating the controls before it from the plot after it. */
+.mz-panel__strip {
+  border-top: 1px solid var(--mz-border);
+  gap: 0.25rem 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.mz-panel__strip > * {
+  margin-bottom: 0;
+}
+
+/* Plotly needs a laid-out box before it will draw; it cannot size itself. */
+.mz-plot {
+  height: 20rem;
+  width: 100%;
+}
+
+.mz-plot--tall {
+  height: 26rem;
+}
+
+/* Facets stack, so the container grows with the number of samples. The row
+   height is set inline from the series count. */
+.mz-plot--facet {
+  height: auto;
+  min-height: 20rem;
+}
+
+.mz-plot__empty {
+  align-items: center;
+  color: var(--mz-muted);
+  display: flex;
+  height: 20rem;
+  justify-content: center;
+  text-align: center;
+}
+
+/* A wide table scrolls inside itself; the page never scrolls sideways. */
+.mz-table-scroll {
+  max-height: 26rem;
+  overflow: auto;
+}
+
+/* `.vf-table` sets no width, so it shrinks to its content and leaves a gap
+   between the last column and the edge of its container. */
+.mz-table-scroll .vf-table {
+  width: 100%;
+}
+
+.mz-table-scroll .vf-table__header {
+  background-color: var(--vf-ui-color--white, #fff);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.mz-row--clickable {
+  cursor: pointer;
+}
+
+/*
+ * There is no sticky rule for the spectrum viewer.
+ *
+ * `position: sticky` leaves an element's normal-flow box where it was, so a
+ * full-width one in a stack of full-width panels does not push what follows:
+ * the next panel scrolls underneath and the two paint through each other.
+ * Pinning it takes a second column. `DataTab` scrolls it into view instead.
+ */
+
+/* A row of controls that wraps rather than overflowing. */
+.mz-cluster {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.mz-cluster--tight {
+  gap: 0.25rem 0.5rem;
+}
+
+.mz-push-right {
+  margin-left: auto;
+}
+
+/* A segmented control, for Overlay/Facet and Fields/MassQL. Built on the
+   button tokens so it sits in the same family as the real buttons. */
+.mz-segment {
+  display: inline-flex;
+}
+
+.mz-segment__option {
+  background-color: var(--vf-ui-color--white, #fff);
+  border: 1px solid var(--vf-color--blue, #3b6fb6);
+  color: var(--vf-color--blue, #3b6fb6);
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.mz-segment__option:first-child {
+  border-radius: 3px 0 0 3px;
+}
+
+.mz-segment__option:last-child {
+  border-radius: 0 3px 3px 0;
+}
+
+.mz-segment__option + .mz-segment__option {
+  border-left-width: 0;
+}
+
+.mz-segment__option[aria-pressed='true'] {
+  background-color: var(--vf-color--blue, #3b6fb6);
+  color: #fff;
+}
+
+/* vf's form controls are sized for public pages. This drops them one step,
+   for screens that are mostly controls. */
+.mz-field {
+  font-size: 0.875rem !important;
+  padding: 0.375rem 0.5rem !important;
+}
+
+/* The blue is the ground the photograph is laid over: it shows while the
+   image loads, and fills the edges at an aspect ratio `cover` cannot fill
+   from the centre. */
+.mz-hero__bg {
+  background-color: var(--vf-color--blue--dark, #193f90);
+  background-image: url('./assets/hero.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/*
+ * The copy sits on its own ground. The photograph's luminance varies across
+ * the area the heading occupies, so no single text colour is legible over all
+ * of it; on this card the vf components inside keep their own colours.
+ */
+.mz-hero__box {
+  background-color: var(--vf-ui-color--white, #fff);
+  border-radius: 4px;
+  max-width: 44rem;
+  padding: 2.5rem;
+}
+
+@media (max-width: 40rem) {
+  .mz-hero__box {
+    padding: 1.5rem;
+  }
+}
+
+/* vf lights the current nav item off `aria-current`, which RouterLink sets
+   only on an exact match. `router-link-active` also covers the nested case,
+   so Datasets stays lit while a dataset is open. */
+.vf-navigation__item .router-link-active {
+  color: var(--vf-color--blue, #3b6fb6);
+  text-shadow: 1px 0 0 currentColor;
+}
+
+/* The header brand is a link, but it is a wordmark first. */
+.mz-brand,
+.mz-brand:hover,
+.mz-brand:focus {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Sized off the header row, not the file: the logo is 770px wide. */
+.mz-brand__logo {
+  display: block;
+  height: 3rem;
+  width: auto;
+}
+
+/* The server-side file picker: a scrolling tree of hairline-separated rows.
+   An open branch shows its children below it, so the box is tall. */
+.mz-browser,
+.mz-browser__children {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mz-browser {
+  max-height: 26rem;
+  overflow: auto;
+}
+
+/*
+ * Depth is indentation, and the row carries it as a number so the padding is
+ * computed here rather than being a different inline pixel value on every
+ * level. A nested row is not a sibling of the row above it in the DOM, so the
+ * separator is a rule on top of every row bar the tree's first, rather than a
+ * border between list items.
+ */
+.mz-browser__row,
+.mz-browser__note {
+  border-top: 1px solid var(--vf-color--neutral--100, #f3f3f3);
+  padding: 0.375rem 1rem 0.375rem calc(1rem + var(--mz-depth, 0) * 1.125rem);
+}
+
+.mz-browser > li:first-child > .mz-browser__row {
+  border-top: 0;
+}
+
+.mz-browser__row--selected {
+  background-color: var(--vf-ui-color--grey--light, #f3f3f3);
+}
+
+/* The twisty, and the same width reserved on a row without one, so names
+   line up within a level whether or not they can be opened. */
+.mz-browser__twisty {
+  background: none;
+  border: 0;
+  color: var(--mz-muted);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0;
+  text-align: center;
+  width: 0.875rem;
+}
+
+/*
+ * A native checkbox, not `vf-form__checkbox`.
+ *
+ * vf hides the real input (`opacity: 0`) and paints the box from a sibling
+ * `.vf-form__label::before`, so its class on a bare input renders nothing at
+ * all, and that pattern has no indeterminate state. A tree needs all three
+ * states: a directory with only some of its files picked. The UA control
+ * draws them and stays keyboard-operable; `accent-color` matches the vf
+ * palette.
+ */
+.mz-browser__check {
+  accent-color: var(--vf-color--blue, #3b6fb6);
+  flex: 0 0 auto;
+  height: 0.875rem;
+  margin: 0;
+  width: 0.875rem;
+}
+
+.mz-browser__spacer {
+  flex: 0 0 auto;
+  width: 0.875rem;
+}
+
+/* What a branch says when it is open but has nothing to show. */
+.mz-browser__note {
+  color: var(--mz-muted);
+}
+
+.mz-browser__empty {
+  color: var(--mz-muted);
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+
+/* A job card. The status tint comes from a vf background utility; this is the
+   shape around it. */
+.mz-job {
+  border: 1px solid var(--mz-border);
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+}
+
+.mz-job__pulse {
+  animation: mz-pulse 1.6s ease-in-out infinite;
+  background-color: currentColor;
+  border-radius: 50%;
+  height: 0.5rem;
+  width: 0.5rem;
+}
+
+@keyframes mz-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mz-job__pulse {
+    animation: none;
+  }
+}
+
+.mz-job__log {
+  background-color: rgb(255 255 255 / 60%);
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 0.5rem;
+  max-height: 10rem;
+  overflow: auto;
+  padding: 0.5rem;
+  white-space: pre-wrap;
+}
+
+/*
+ * The unit beside a value, as in "0.01 Da".
+ *
+ * It sizes to its content rather than sharing the row equally, since "ppm" is
+ * a label and the number is the field. `auto` alone is not enough: a vf select
+ * carries its own padding and dropdown arrow, and the widest option still has
+ * to fit between them, so the floor is explicit.
+ */
+.mz-unit {
+  flex: 0 0 auto;
+  min-width: 5rem;
+  width: auto;
+}
+
+/* A from/to pair. vf's inputs are block-level and full-width, so without this
+   the two halves of a range stack instead of sharing the row. */
+.mz-range {
+  align-items: center;
+  display: flex;
+  gap: 0.375rem;
+}
+
+.mz-range .vf-form__input {
+  flex: 1;
+  min-width: 0;
+}

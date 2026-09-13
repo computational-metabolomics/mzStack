@@ -1,0 +1,42 @@
+{
+  "name": "mzstack-app-ui",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@visual-framework/vf-badge": "^3.0.5",
+    "@visual-framework/vf-banner": "^2.0.6",
+    "@visual-framework/vf-body": "^1.2.0",
+    "@visual-framework/vf-box": "^2.4.0",
+    "@visual-framework/vf-breadcrumbs": "^2.0.6",
+    "@visual-framework/vf-button": "^3.0.5",
+    "@visual-framework/vf-card": "^2.7.3",
+    "@visual-framework/vf-content": "^1.6.21",
+    "@visual-framework/vf-footer": "^1.2.4",
+    "@visual-framework/vf-form": "^2.0.3",
+    "@visual-framework/vf-grid": "^1.4.1",
+    "@visual-framework/vf-hero": "^4.0.8",
+    "@visual-framework/vf-navigation": "^5.0.4",
+    "@visual-framework/vf-stack": "^3.0.1",
+    "@visual-framework/vf-table": "^1.2.3",
+    "@visual-framework/vf-tabs": "^2.1.12",
+    "@visual-framework/vf-text": "^1.1.1",
+    "@visual-framework/vf-utility-classes": "^2.0.0",
+    "plotly.js-dist-min": "^4.1.0",
+    "vue": "^3.5.42",
+    "vue-router": "^5.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "typescript": "~5.9.0",
+    "vite": "^8.3.0",
+    "vue-tsc": "^3.3.11"
+  }
+}

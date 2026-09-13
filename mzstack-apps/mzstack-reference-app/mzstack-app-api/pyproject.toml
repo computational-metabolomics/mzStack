@@ -1,0 +1,55 @@
+[project]
+name = "mzstack-api"
+version = "0.1.0"
+description = "HTTP API over the mzstack library."
+requires-python = ">=3.10"
+license = "Apache-2.0"
+dependencies = [
+    "flask>=3.0",
+    "flask-cors>=4.0",
+    "mzstack",
+]
+
+[project.optional-dependencies]
+# The query and MetaboLights endpoints need mzstack's optional extras. Absent,
+# the library raises an "install it with ..." message that the API passes
+# through unchanged.
+massql = ["mzstack[massql]"]
+metabolights = ["mzstack[metabolights]"]
+dev = [
+    "mzstack[massql]",
+    "pytest>=7.0",
+    "pytest-cov",
+    "ruff>=0.4",
+]
+
+# mzstack is local and unpublished: resolve it from the checkout at the
+# repository root, three levels up from this application.
+[tool.uv.sources]
+mzstack = { path = "../../../mzstack-py", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mzstack_api"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "requires_massql: needs the massql package",
+    "requires_metabolights: needs metabolights-utils",
+    "network: hits the network",
+]
